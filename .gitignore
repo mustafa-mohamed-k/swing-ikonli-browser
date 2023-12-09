@@ -22,3 +22,7 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+/swing-ikonli-browser/target/
+/Swing Ikonli Browser/nbproject/private/
+/Swing Ikonli Browser/build/
+/Swing Ikonli Browser/dist/
