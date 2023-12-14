@@ -1,21 +1,32 @@
 package main;
 
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.io.IOException;
 import java.util.EnumSet;
 import static java.util.EnumSet.allOf;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rsyntaxtextarea.Theme;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.IkonProvider;
+import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
+import org.kordamp.ikonli.swing.FontIcon;
 
 /**
  *
@@ -30,6 +41,8 @@ public class Home extends javax.swing.JFrame {
     private final RSyntaxTextArea textAreaFXML;
     private final RSyntaxTextArea textAreaCSS;
     private final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+
+    public static boolean darkTheme = false;
 
     /**
      * Creates new form Home
@@ -56,6 +69,15 @@ public class Home extends javax.swing.JFrame {
 
         jListPacks.getSelectionModel().setSelectionInterval(0, 0); // select "All Icon Packs"
 
+        jTextFieldSearch.putClientProperty("JTextField.placeholderText", "Search");
+        jTextFieldSearch.putClientProperty("JTextField.selectAllOnFocusPolicy", "always");
+        jTextFieldSearch.putClientProperty("JTextField.showClearButton", true);
+
+        FontIcon fontIcon = FontIcon.of(FluentUiRegularAL.DARK_THEME_24);
+        fontIcon.setIconSize(18);
+        jButtonChangeTheme.setIcon(fontIcon);
+        jButtonChangeTheme.setText("");
+
     }
 
     private void initTextArea(RSyntaxTextArea textArea, String syntaxStyle, JPanel panel) {
@@ -81,6 +103,7 @@ public class Home extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jListPacks = new javax.swing.JList<>();
+        jButtonChangeTheme = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jTextFieldSearch = new javax.swing.JTextField();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -121,6 +144,14 @@ public class Home extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(jListPacks);
 
+        jButtonChangeTheme.setText("jButton1");
+        jButtonChangeTheme.setToolTipText("Change theme to dark theme");
+        jButtonChangeTheme.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonChangeThemeActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -130,7 +161,8 @@ public class Home extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel1)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 57, Short.MAX_VALUE)
+                        .addComponent(jButtonChangeTheme))
                     .addComponent(jScrollPane1))
                 .addContainerGap())
         );
@@ -138,9 +170,11 @@ public class Home extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(jButtonChangeTheme))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -381,6 +415,10 @@ public class Home extends javax.swing.JFrame {
         clipboard.setContents(text, text);
     }//GEN-LAST:event_jButtonCopyFXActionPerformed
 
+    private void jButtonChangeThemeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonChangeThemeActionPerformed
+        toggleTheme();
+    }//GEN-LAST:event_jButtonChangeThemeActionPerformed
+
     private void onTableSelectionChanged() {
         if (jTableIcons.getSelectedRowCount() == 1) {
 
@@ -420,7 +458,6 @@ public class Home extends javax.swing.JFrame {
                     + "\t</Button>\n"
                     + "</GridPane>", iconName);
             textAreaFXML.setText(fxmlCode);
-            
 
             String cssCode = String.format(
                     "#my-icon {\n"
@@ -483,8 +520,44 @@ public class Home extends javax.swing.JFrame {
         jListPacks.setModel(model);
     }
 
+    private void toggleTheme() {
+        try {
+            if (darkTheme) {
+                UIManager.setLookAndFeel(new FlatLightLaf());
+                jButtonChangeTheme.setToolTipText("Change theme to dark theme");
+                try {
+                    Theme theme = Theme.load(getClass().getResourceAsStream(
+                            "/org/fife/ui/rsyntaxtextarea/themes/default.xml"));
+                    for (RSyntaxTextArea area : new RSyntaxTextArea[]{textAreaCSS, textAreaFXML, textAreaFx, textAreaSwing}) {
+                        theme.apply(area);
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(Home.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                UIManager.setLookAndFeel(new FlatDarkLaf());
+                jButtonChangeTheme.setToolTipText("Change theme to light theme");
+                try {
+                    Theme theme = Theme.load(getClass().getResourceAsStream(
+                            "/org/fife/ui/rsyntaxtextarea/themes/dark.xml"));
+                    for (RSyntaxTextArea area : new RSyntaxTextArea[]{textAreaCSS, textAreaFXML, textAreaFx, textAreaSwing}) {
+                        theme.apply(area);
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(Home.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+            }
+            FlatLaf.updateUI();
+            jTableIcons.updateUI();
+            darkTheme = !darkTheme;
+        } catch (UnsupportedLookAndFeelException ex) {
+
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButtonChangeTheme;
     private javax.swing.JButton jButtonCopyCSS;
     private javax.swing.JButton jButtonCopyFX;
     private javax.swing.JButton jButtonCopyFXML;
